@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json" //work with json
-	"io/ioutil" //work with files
+	"os"            //work with files
 )
 
 //func for checking subscription
@@ -39,7 +39,7 @@ func SaveEmailToFile(email string) error {
 	}
 
 	//write data into file
-	err = ioutil.WriteFile("emails.json", data, 0644)
+	err = os.WriteFile("emails.json", data, 0644)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func SaveEmailToFile(email string) error {
 
 func GetEmailsFromFile() ([]string, error) {
 	//read emails from file
-	data, err := ioutil.ReadFile("emails.json")
+	data, err := os.ReadFile("emails.json")
 	if err != nil {
 		return nil, err
 	}
