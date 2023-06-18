@@ -1,9 +1,9 @@
 package api
 
 import (
-	"encoding/json" //work with json
-	"errors"        //manipulate errors
-	"net/http"      //work with http
+	"encoding/json"
+	"errors"
+	"net/http"
 )
 
 func HandleRate(w http.ResponseWriter, r *http.Request) { //w for sending answear to client, r - for getting details about http

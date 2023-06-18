@@ -1,8 +1,8 @@
-package utils
+package files
 
 import (
-	"encoding/json" //work with json
-	"os"            //work with files
+	"encoding/json"
+	"os"
 )
 
 //func for checking subscription

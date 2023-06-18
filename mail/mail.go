@@ -1,13 +1,12 @@
 package mail
 
 import (
-	"fmt"      //text format
-	"log"      //logging
-	"net/smtp" //work with emails
+	"fmt"
+	"log"
+	"net/smtp"
 )
 
 func SendEmail(email string, rate float64) error {
-	//variables
 	from := "your-email@example.com" //enter your email
 	to := email
 	subject := "Bitcoin Rate"

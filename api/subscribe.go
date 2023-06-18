@@ -1,9 +1,9 @@
 package api
 
 import (
-	"bitcoin-app/utils"
-	"fmt"      //text format
-	"net/http" //work with http
+	"bitcoin-app/files"
+	"fmt"
+	"net/http"
 )
 
 func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
@@ -24,13 +24,13 @@ func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get("email")
 
 	//check if email already subscribed
-	if utils.IsEmailSubscribed(email) {
+	if files.IsEmailSubscribed(email) {
 		http.Error(w, "Email already subscribed", http.StatusConflict)
 		return
 	}
 
 	//write email in file
-	err = utils.SaveEmailToFile(email)
+	err = files.SaveEmailToFile(email)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return

@@ -2,8 +2,8 @@ package main
 
 import (
 	"bitcoin-app/api"
-	"log"      //logging
-	"net/http" //work with http
+	"log"
+	"net/http"
 )
 
 func main() {

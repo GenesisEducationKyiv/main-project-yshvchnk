@@ -1,11 +1,11 @@
 package api
 
 import (
+	"bitcoin-app/files"
 	"bitcoin-app/mail"
-	"bitcoin-app/utils"
-	"fmt"      //text format
-	"log"      //logging
-	"net/http" //work with http
+	"fmt"
+	"log"
+	"net/http"
 )
 
 func HandleSendEmails(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func HandleSendEmails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//get emails from file
-	emails, err := utils.GetEmailsFromFile()
+	emails, err := files.GetEmailsFromFile()
 	if err != nil {
 		http.Error(w, "Failed to load email addresses", http.StatusInternalServerError)
 		return
