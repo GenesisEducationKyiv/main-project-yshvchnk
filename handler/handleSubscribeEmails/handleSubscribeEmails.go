@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"bitcoin-app/service"
+	service "bitcoin-app/service/subscribeEmails"
 	"errors"
 	"fmt"
 	"net/http"
 )
 
-
-func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
+func HandleSubscribeEmails(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
@@ -18,9 +17,9 @@ func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
 
 	email := r.Form.Get("email")
 
-	emailService := service.NewEmailService()
+	emailServiceSubscribe := service.NewEmailServiceSubscribe()
 
-	err = emailService.SubscribeEmail(email)
+	err = emailServiceSubscribe.SubscribeEmail(email)
 	if err != nil {
 		if errors.Is(err, service.ErrEmailAlreadySubscribed) {
 			http.Error(w, "Email is already subscribed", http.StatusBadRequest)
@@ -31,6 +30,6 @@ func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "Email added")
+	fmt.Fprintln(w, "Email have been added")
 }
 

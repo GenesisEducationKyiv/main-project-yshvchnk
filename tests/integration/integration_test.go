@@ -2,7 +2,7 @@ package test
 
 import (
 	"bitcoin-app/store"
-	"bitcoin-app/service"
+	"bitcoin-app/service/subscribeEmails"
 	"bitcoin-app/tests"
 	"testing"
 )
@@ -21,7 +21,7 @@ func TestServiceAndDatabaseWillReturnSuccess(t *testing.T) {
 			t.Fatal(err)
 	}
 
-	emailService := service.NewEmailService()
+	emailService := service.NewEmailServiceSubscribe()
 
 	err = emailService.SubscribeEmail(testEmail)
 	if err != nil {

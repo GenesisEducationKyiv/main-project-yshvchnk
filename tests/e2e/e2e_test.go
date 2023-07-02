@@ -1,8 +1,11 @@
 package test
 
 import (
-	"bitcoin-app/handler"
-	"bitcoin-app/service"
+	currencyHandler "bitcoin-app/handler/handleCurrencyRate"
+	subscribeHandler "bitcoin-app/handler/handleSubscribeEmails"
+	sendEmailsHandler "bitcoin-app/handler/handleSendEmails"
+	currencyRateGet "bitcoin-app/service/getCurrencyRate"
+	emailSend "bitcoin-app/service/sendEmails"
 	test "bitcoin-app/tests"
 	"io"
 	"net/http"
@@ -17,11 +20,11 @@ import (
 const storagePath = "emails.json"
 
 func TestGetBitcoinRateWillReturnSuccess(t *testing.T) {
-	bitcoinAPI := service.NewCoinGeckoAPI()
+	bitcoinAPI := currencyRateGet.NewCurrencyAPIProvider()
 
-	bitcoinRateHandler := handler.NewBitcoinRateHandler(bitcoinAPI)
+	bitcoinRateHandler := currencyHandler.NewCurrencyRateHandler(bitcoinAPI)
 
-	server := httptest.NewServer(http.HandlerFunc(bitcoinRateHandler.HandleRate))
+	server := httptest.NewServer(http.HandlerFunc(bitcoinRateHandler.HandleCurrencyRate))
 	defer server.Close()
 
 	resp, err := http.Get(server.URL)
@@ -53,7 +56,7 @@ func TestSubscribeToBitcoinRateWillReturnSuccess(t *testing.T) {
 		t.Fatalf("Error cleaning up emails.json: %s", err)
 	}
 
-	server := httptest.NewServer(http.HandlerFunc(handler.HandleSubscribe))
+	server := httptest.NewServer(http.HandlerFunc(subscribeHandler.HandleSubscribeEmails))
 	defer server.Close()
 
 	formData := url.Values{}
@@ -74,9 +77,13 @@ func TestSubscribeToBitcoinRateWillReturnSuccess(t *testing.T) {
 }
 
 func TestSendEmailNotificationWillReturnSuccess(t *testing.T) {
-	bitcoinAPI := service.NewCoinGeckoAPI()
+	bitcoinAPI := currencyRateGet.NewCurrencyAPIProvider()
 
-	emailHandler, err := handler.NewEmailHandler(storagePath, bitcoinAPI)
+	emailSender := &emailSend.EmailSenderPath{
+		StoragePath: storagePath,
+	}
+
+	emailHandler, err := sendEmailsHandler.NewEmailSendHandler(storagePath, bitcoinAPI, emailSender)
 	if err != nil {
 		log.Fatal(err)
 	}

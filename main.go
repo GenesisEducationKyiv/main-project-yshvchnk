@@ -1,67 +1,42 @@
 package main
 
 import (
-	"bitcoin-app/handler"
-	"bitcoin-app/service"
+	rateCurrencyHandler "bitcoin-app/handler/handleCurrencyRate"
+	sendEmailsHandler "bitcoin-app/handler/handleSendEmails"
+	subscribeEmailsHandler "bitcoin-app/handler/handleSubscribeEmails"
+	currencyRateGet "bitcoin-app/service/getCurrencyRate"
+	emailSend "bitcoin-app/service/sendEmails"
+	"bitcoin-app/utils"
 	"log"
 	"net/http"
 	"os"
 	"github.com/go-chi/chi"
-	"github.com/joho/godotenv"
 )
 
 const storagePath = "../emails.json"
 
-type EmailSender struct {
-	StoragePath string
-}
-
-func (s *EmailSender) SendEmails(emails []string, rate float64) bool {
-	emailService := service.NewEmailSenderDetails(s.StoragePath)
-	return emailService.SendEmails(emails, rate)
-}
-
-func (s *EmailSender) GetBitcoinRate() (float64, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	coinGeckoAPI := service.NewCoinGeckoAPI()
-
-	rate, err := coinGeckoAPI.GetBitcoinRate()
-	if err != nil {
-		return 0.0, err
-	}
-
-	return rate, nil
-}
-
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	utils.LoadEnv()
 
 	port := os.Getenv("PORT")
 
 	router := chi.NewRouter()
 
-	bitcoinAPI := service.NewCoinGeckoAPI()
+	currencyAPI := currencyRateGet.NewCurrencyAPIProvider()
 
-	bitcoinRateHandler := handler.NewBitcoinRateHandler(bitcoinAPI)
+	currencyRateHandler := rateCurrencyHandler.NewCurrencyRateHandler(currencyAPI)
 
-	emailSender := &EmailSender{
+	emailSender := &emailSend.EmailSenderPath{
 		StoragePath: storagePath,
 	}
 
-	emailHandler, err := handler.NewEmailHandler(storagePath, bitcoinAPI, emailSender)
+	emailHandler, err := sendEmailsHandler.NewEmailSendHandler(storagePath, currencyAPI, emailSender)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	router.Get("/api/rate", bitcoinRateHandler.HandleRate)
-	router.Post("/api/subscribe", handler.HandleSubscribe)
+	router.Get("/api/rate", currencyRateHandler.HandleCurrencyRate)
+	router.Post("/api/subscribe", subscribeEmailsHandler.HandleSubscribeEmails)
 	router.Post("/api/sendEmails", emailHandler.HandleSendEmails)
 
 	log.Println("Server started on port", port)
