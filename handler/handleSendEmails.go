@@ -20,13 +20,13 @@ func (s *BitcoinRateService) GetRate() (float64, error) {
 }
 
 type EmailSender interface {
-	SendEmails(emails []string, rate float64) bool
-	GetBitcoinRate() (float64, error)
+	SendRateToUsers(emails []string, rate float64) bool
 }
 
 type EmailService struct {
 	Storage store.EmailStorage
 	Sender  EmailSender
+	RateProvider BitcoinRateProvider
 }
 
 func (s *EmailService) SendEmails() error {
@@ -35,14 +35,14 @@ func (s *EmailService) SendEmails() error {
 		return errors.Wrap(err, "Failed to load email addresses")
 	}
 
-	rate, err := s.Sender.GetBitcoinRate()
+	rate, err := s.RateProvider.GetBitcoinRate()
 	if err != nil {
 		return errors.Wrap(err, "Failed to get Bitcoin rate")
 	}
 
-	success := s.Sender.SendEmails(emails, rate)
+	success := s.Sender.SendRateToUsers(emails, rate)
 	if !success {
-		return fmt.Errorf("Failed to send %d emails", len(emails))
+		return fmt.Errorf("failed to send %d emails", len(emails))
 	}
 
 	return nil
@@ -52,15 +52,11 @@ type EmailHandler struct {
 	EmailService *EmailService
 }
 
-func NewEmailHandler(storagePath string, rateProvider BitcoinRateProvider,emailSender EmailSender) (*EmailHandler, error) {
-	storage, err := store.NewEmailStorage(storagePath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create email storage")
-	}
-
+func NewEmailHandler(storage store.EmailStorage, rateProvider BitcoinRateProvider,emailSender EmailSender) (*EmailHandler, error) {
 	emailService := &EmailService{
-		Storage: *storage,
+		Storage: storage,
 		Sender:  emailSender,
+		RateProvider: rateProvider,
 	}
 
 	handler := &EmailHandler{

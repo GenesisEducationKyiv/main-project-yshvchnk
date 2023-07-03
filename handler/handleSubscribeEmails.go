@@ -8,9 +8,9 @@ import (
 )
 
 
-func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
-
-	err := r.ParseForm()
+func HandleSubscribe (emailService *service.EmailService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -18,7 +18,7 @@ func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
 
 	email := r.Form.Get("email")
 
-	emailService := service.NewEmailService()
+	// emailService := service.NewEmailService()
 
 	err = emailService.SubscribeEmail(email)
 	if err != nil {
@@ -32,5 +32,6 @@ func HandleSubscribe(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "Email added")
+	}
 }
 

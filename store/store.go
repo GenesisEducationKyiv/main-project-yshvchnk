@@ -1,20 +1,19 @@
 package store
 
 import (
-	"bitcoin-app/mail"
 	"encoding/json"
 	"os"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
-
+``
 type EmailSender interface {
 	SendEmail(email string, rate float64) error
 }
 
 type EmailStorage struct {
 	StoragePath string
-	EmailSender
+	Sender EmailSender
 }
 
 func NewEmailStorage(storagePath string) (*EmailStorage, error) {
@@ -92,7 +91,7 @@ func (es *EmailStorage) GetEmailsFromFile() ([]string, error) {
 }
 
 func (es *EmailStorage) SendEmail(email string, rate float64) error {
-	err := mail.SendEmail(email, rate)
+	err := es.Sender.SendEmail(email, rate)
 	if err != nil {
 		return err
 	}
