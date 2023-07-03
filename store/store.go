@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
-``
+
 type EmailSender interface {
 	SendEmail(email string, rate float64) error
 }
