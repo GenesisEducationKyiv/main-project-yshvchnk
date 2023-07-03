@@ -10,23 +10,37 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type BitcoinAPI interface {
+	GetBitcoinRate() (float64, error)
+}
+
+type CoinGeckoAPI struct {
+	CoinGeckoURL string
+	Ids          string
+	VsCurrencies string
+}
+
+func NewCoinGeckoAPI() *CoinGeckoAPI {
+	return &CoinGeckoAPI{
+		CoinGeckoURL: os.Getenv("COIN_GECKO_API"),
+		Ids:          os.Getenv("IDS"),
+		VsCurrencies: os.Getenv("VS_CURRENCIES"),
+	}
+}
+
 type BitcoinResponse struct {
 	Bitcoin struct {
 		UAH float64 `json:"uah"`
 	} `json:"bitcoin"`
 }
 
-func GetBitcoinRate() (float64, error) {
+func (api *CoinGeckoAPI) GetBitcoinRate() (float64, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	var coinGeckoAPI = os.Getenv("COIN_GECKO_API")
-	var ids = os.Getenv("IDS")
-	var vsCurrencies = os.Getenv("VS_CURRENCIES")
-
-	url := coinGeckoAPI + "?ids=" + ids + "&vs_currencies=" + vsCurrencies
+	url := api.CoinGeckoURL + "?ids=" + api.Ids + "&vs_currencies=" + api.VsCurrencies
 
 	resp, err := http.Get(url)
 	if err != nil {

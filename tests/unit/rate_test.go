@@ -1,41 +1,32 @@
 package test
 
 import (
-	"bitcoin-app/service"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"bitcoin-app/tests"
 	"testing"
-	"github.com/joho/godotenv"
 )
 
-func TestMain(m *testing.M) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+type MockBitcoinAPI struct{}
 
-	exitCode := m.Run()
+func (api *MockBitcoinAPI) GetBitcoinRate() (float64, error) {
+	return 1000000.0, nil
+}
 
-	os.Exit(exitCode)
+type MockAPIErrorBitcoinAPI struct{}
+
+func (api *MockAPIErrorBitcoinAPI) GetBitcoinRate() (float64, error) {
+	return 0, test.ErrAPIResponse
+}
+
+type MockRateNotFoundBitcoinAPI struct{}
+
+func (api *MockRateNotFoundBitcoinAPI) GetBitcoinRate() (float64, error) {
+	return 0, test.ErrRateNotFound
 }
 
 func TestGetBitcoinRateWillReturnSuccess(t *testing.T) {
-	mockAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{
-			"bitcoin": {
-				"uah": 1000000
-			}
-		}`))
-	}))
-	defer mockAPI.Close()
+	mockAPI := &MockBitcoinAPI{}
 
-	originalAPI := os.Getenv("COIN_GECKO_API")
-	os.Setenv("COIN_GECKO_API", mockAPI.URL)
-	defer os.Setenv("COIN_GECKO_API", originalAPI)
-
-	rate, err := service.GetBitcoinRate()
+	rate, err := mockAPI.GetBitcoinRate()
 
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
@@ -48,16 +39,9 @@ func TestGetBitcoinRateWillReturnSuccess(t *testing.T) {
 }
 
 func TestGetBitcoinRateWillReturnAPIError(t *testing.T) {
-	mockAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-	}))
-	defer mockAPI.Close()
+	mockAPI := &MockAPIErrorBitcoinAPI{}
 
-	originalAPI := os.Getenv("COIN_GECKO_API")
-	os.Setenv("COIN_GECKO_API", mockAPI.URL)
-	defer os.Setenv("COIN_GECKO_API", originalAPI)
-
-	rate, err := service.GetBitcoinRate()
+	rate, err := mockAPI.GetBitcoinRate()
 
 	if err == nil {
 		t.Error("Expected an error, got nil")
@@ -72,20 +56,9 @@ func TestGetBitcoinRateWillReturnAPIError(t *testing.T) {
 }
 
 func TestGetBitcoinRateWillReturnRateNotFound(t *testing.T) {
-	mockAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{
-			"bitcoin": {
-				"usd": 40000
-			}
-		}`))
-	}))
-	defer mockAPI.Close()
+	mockAPI := &MockRateNotFoundBitcoinAPI{}
 
-	originalAPI := os.Getenv("COIN_GECKO_API")
-	os.Setenv("COIN_GECKO_API", mockAPI.URL)
-	defer os.Setenv("COIN_GECKO_API", originalAPI)
-
-	rate, err := service.GetBitcoinRate()
+	rate, err := mockAPI.GetBitcoinRate()
 
 	if err == nil {
 		t.Error("Expected an error, got nil")

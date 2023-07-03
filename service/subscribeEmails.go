@@ -1,10 +1,9 @@
 package service
 
 import (
-	"bitcoin-app/file"
+	"bitcoin-app/store"
 	"errors"
 	"fmt"
-	"log"
 )
 
 var (
@@ -13,14 +12,26 @@ var (
 	ErrFailedToSaveEmail       = errors.New("failed to save email")
 )
 
-func SubscribeEmail(email string) error {
+type EmailStorage interface {
+	IsEmailSubscribed(email string) (bool, error)
+	SaveEmailToFile(email string) error
+}
 
-	es, err := file.NewEmailStorage("../emails.json")
-	if err != nil {
-			log.Fatal(err)
+type EmailService struct {
+	storage EmailStorage
+}
+
+func NewEmailService() *EmailService {
+	storagePath := "../emails.json"
+	storage, _ := store.NewEmailStorage(storagePath)
+	return &EmailService{
+		storage: storage,
 	}
+}
 
-	subscribed, err := es.IsEmailSubscribed(email)
+func (es *EmailService) SubscribeEmail(email string) error {
+
+	subscribed, err := es.storage.IsEmailSubscribed(email)
 	if err != nil {
 		return fmt.Errorf("failed to check subscription: %s: %s", ErrSubscriptionCheckFailed, err.Error())
 	}
@@ -29,7 +40,7 @@ func SubscribeEmail(email string) error {
 		return ErrEmailAlreadySubscribed
 	}
 
-	err = es.SaveEmailToFile(email)
+	err = es.storage.SaveEmailToFile(email)
 	if err != nil {
 		return fmt.Errorf("failed to save email: %s: %s", ErrFailedToSaveEmail, err.Error())
 	}

@@ -1,4 +1,4 @@
-package file
+package store
 
 import (
 	"encoding/json"
@@ -7,8 +7,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type EmailSender interface {
+	SendEmail(email string, rate float64) error
+}
+
 type EmailStorage struct {
 	StoragePath string
+	Sender EmailSender
 }
 
 func NewEmailStorage(storagePath string) (*EmailStorage, error) {
@@ -83,4 +88,12 @@ func (es *EmailStorage) GetEmailsFromFile() ([]string, error) {
 	}
 
 	return emails, nil
+}
+
+func (es *EmailStorage) SendEmail(email string, rate float64) error {
+	err := es.Sender.SendEmail(email, rate)
+	if err != nil {
+		return err
+	}
+	return nil
 }

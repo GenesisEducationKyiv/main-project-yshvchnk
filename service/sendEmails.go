@@ -5,7 +5,22 @@ import (
 	"log"
 )
 
-func SendEmails(emails []string, rate float64) bool {
+type EmailSender interface {
+	SendEmail(email string, rate float64) bool
+	GetBitcoinRate() (float64, error)
+}
+
+type EmailSenderDetails struct {
+	StoragePath string
+}
+
+func NewEmailSenderDetails(storagePath string) *EmailSenderDetails {
+	return &EmailSenderDetails{
+		StoragePath: storagePath,
+	}
+}
+
+func (es *EmailSenderDetails) SendEmails(emails []string, rate float64) bool {
 	success := true
 
 	for _, email := range emails {

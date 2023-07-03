@@ -2,7 +2,8 @@ package test
 
 import (
 	"bitcoin-app/handler"
-	"bitcoin-app/tests"
+	"bitcoin-app/service"
+	test "bitcoin-app/tests"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,10 +11,17 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"log"
 )
 
+const storagePath = "emails.json"
+
 func TestGetBitcoinRateWillReturnSuccess(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(handler.HandleRate))
+	bitcoinAPI := service.NewCoinGeckoAPI()
+
+	bitcoinRateHandler := handler.NewBitcoinRateHandler(bitcoinAPI)
+
+	server := httptest.NewServer(http.HandlerFunc(bitcoinRateHandler.HandleRate))
 	defer server.Close()
 
 	resp, err := http.Get(server.URL)
@@ -40,7 +48,7 @@ func TestGetBitcoinRateWillReturnSuccess(t *testing.T) {
 
 func TestSubscribeToBitcoinRateWillReturnSuccess(t *testing.T) {
 
-	err := test.ClearFileContents("emails.json")
+	err := test.ClearFileContents(storagePath)
 	if err != nil {
 		t.Fatalf("Error cleaning up emails.json: %s", err)
 	}
@@ -66,10 +74,11 @@ func TestSubscribeToBitcoinRateWillReturnSuccess(t *testing.T) {
 }
 
 func TestSendEmailNotificationWillReturnSuccess(t *testing.T) {
+	bitcoinAPI := service.NewCoinGeckoAPI()
 
-	emailHandler, err := handler.NewEmailHandler("emails.json")
+	emailHandler, err := handler.NewEmailHandler(storagePath, bitcoinAPI)
 	if err != nil {
-		t.Fatalf("Failed to create EmailHandler: %s", err)
+		log.Fatal(err)
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(emailHandler.HandleSendEmails))

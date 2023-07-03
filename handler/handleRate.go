@@ -6,9 +6,19 @@ import (
 	"net/http"
 )
 
-func HandleRate(w http.ResponseWriter, r *http.Request) {
+type BitcoinRateHandler struct {
+	BitcoinAPI service.BitcoinAPI
+}
 
-	rate, err := service.GetBitcoinRate()
+func NewBitcoinRateHandler(bitcoinAPI service.BitcoinAPI) *BitcoinRateHandler {
+	return &BitcoinRateHandler{
+		BitcoinAPI: bitcoinAPI,
+	}
+}
+
+func (h *BitcoinRateHandler) HandleRate(w http.ResponseWriter, r *http.Request) {
+
+	rate, err := h.BitcoinAPI.GetBitcoinRate()
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
