@@ -1,8 +1,8 @@
 package service
 
 import (
-	"fmt"
 	"bitcoin-app/store"
+	"fmt"
 )
 
 const storagePath = "../emails.json"
