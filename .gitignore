@@ -1,3 +1,6 @@
 main.exe
 /config
 config.yml
+*.drawio
+*.drawio.bkp
+.idea
