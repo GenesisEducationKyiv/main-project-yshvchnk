@@ -7,10 +7,14 @@ import (
 	rate "bitcoin-app/service/rate"
 	send "bitcoin-app/service/send"
 	subscribe "bitcoin-app/service/subscribe"
+	"bitcoin-app/logger"
+	"bitcoin-app/consumer"
 	"log"
 	"net/http"
 	"os"
 	"github.com/go-chi/chi"
+  "github.com/sirupsen/logrus"
+
 )
 
 const storagePath = "../emails.json"
@@ -54,4 +58,17 @@ func main() {
 	if serverErr != nil {
 		log.Fatal(serverErr)
 	}
+
+	newLogger := logrus.New()
+	newLogger.SetLevel(logrus.DebugLevel)
+
+	rabbitmqHook := logger.CreateRabbitMQHook("amqp://guest:guest@localhost:5672/", "logs", "", logrus.ErrorLevel)
+
+  newLogger.AddHook(rabbitmqHook)
+
+	newLogger.Error("error log")
+  newLogger.Info("info log")
+  newLogger.Debug("debug log")
+
+	consumer.StartConsumer()
 }

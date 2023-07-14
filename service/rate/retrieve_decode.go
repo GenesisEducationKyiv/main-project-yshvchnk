@@ -7,10 +7,22 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type CurrencyProviderResponse interface {
 	GetCurrencyRate() float64
+}
+
+type LoggingResponse struct {
+	Response CurrencyProviderResponse
+}
+
+func (lr *LoggingResponse) GetCurrencyRate() float64 {
+	responseValue := lr.Response.GetCurrencyRate()
+	formattedResponse := strconv.FormatFloat(responseValue, 'f', -1, 64)
+	log.Printf("Response: &{%s}", formattedResponse)
+	return responseValue
 }
 
 func RetrieveAndDecodeFromAPI(url string, response CurrencyProviderResponse) (float64, error) {
@@ -36,6 +48,6 @@ func RetrieveAndDecodeFromAPI(url string, response CurrencyProviderResponse) (fl
 		return 0, err
 	}
 
-	log.Printf("%T - Response: %s", response, body)
-	return response.GetCurrencyRate(), nil
+	loggedResponse := &LoggingResponse{Response: response}
+	return loggedResponse.GetCurrencyRate(), nil
 }

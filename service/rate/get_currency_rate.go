@@ -13,11 +13,20 @@ func NewAPIProvider(providers []ExchangeRateProvider) *APIProvider {
 func (api *APIProvider) GetCurrencyRate() (float64, error) {
 
 	for _, provider := range api.providers {
-		rate, err := provider.GetCurrencyRate()
+		rate, err := api.getCurrencyRateFromProvider(provider)
 		if err == nil {
 			return rate, nil
 		}
 	}
 
 	return 0, errors.New("unable to retrieve currency rate from any provider")
+}
+
+func (api *APIProvider) getCurrencyRateFromProvider(provider ExchangeRateProvider) (float64, error) {
+	rate, err := provider.GetCurrencyRate()
+	if err != nil {
+		return 0, err
+	}
+
+	return rate, nil
 }
